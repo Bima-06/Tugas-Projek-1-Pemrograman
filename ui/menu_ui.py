@@ -1,7 +1,6 @@
 import os
 from controllers.sistem_peminjaman import SistemPeminjaman
 
-
 class MenuUI:
     def __init__(self, sistem: SistemPeminjaman) -> None:
         self.sistem = sistem
@@ -68,7 +67,7 @@ class MenuUI:
 
             if pilihan == "1":
                 print("\n--- Tambah Kategori ---")
-                id_kat = input("ID Kategori   : ").strip()
+                id_kat = input("ID Kategori   : ").strip().upper()
                 nama = input("Nama Kategori : ").strip()
                 try:
                     self.sistem.tambah_kategori(id_kat, nama)
@@ -89,7 +88,7 @@ class MenuUI:
 
             elif pilihan == "3":
                 print("\n--- Hapus Kategori ---")
-                id_kat = input("ID Kategori yang akan dihapus: ").strip()
+                id_kat = input("ID Kategori yang akan dihapus: ").strip().upper()
                 try:
                     self.sistem.hapus_kategori(id_kat)
                     print("[Sukses] Kategori berhasil dihapus!")
@@ -118,11 +117,11 @@ class MenuUI:
 
             if pilihan == "1":
                 print("\n--- Tambah Alat Baru ---")
-                kode = input("Kode Alat   : ").strip()
+                kode = input("Kode Alat   : ").strip().upper()
                 nama = input("Nama Alat   : ").strip()
-                id_kat = input("ID Kategori : ").strip()
+                id_kat = input("ID Kategori : ").strip().upper()
                 print(f"Opsi kondisi: {', '.join(self.sistem.KONDISI_VALID)}")
-                kondisi = input("Kondisi (Default: Baik): ").strip() or "Baik"
+                kondisi = input("Kondisi (Default: Baik): ").strip().title() or "Baik"
 
                 try:
                     self.sistem.tambah_alat(kode, nama, id_kat, kondisi)
@@ -133,9 +132,9 @@ class MenuUI:
 
             elif pilihan == "2":
                 print("\n--- Ubah Kondisi Alat ---")
-                kode = input("Kode Alat: ").strip()
+                kode = input("Kode Alat: ").strip().upper()
                 print(f"Opsi kondisi valid: {', '.join(self.sistem.KONDISI_VALID)}")
-                kondisi_baru = input("Kondisi Baru: ").strip()
+                kondisi_baru = input("Kondisi Baru: ").strip().title()
 
                 try:
                     self.sistem.ubah_kondisi_alat(kode, kondisi_baru)
@@ -146,7 +145,7 @@ class MenuUI:
 
             elif pilihan == "3":
                 print("\n--- Hapus Alat ---")
-                kode = input("Kode Alat yang akan dihapus: ").strip()
+                kode = input("Kode Alat yang akan dihapus: ").strip().upper()
                 try:
                     self.sistem.hapus_alat(kode)
                     print("[Sukses] Data alat berhasil dihapus!")
@@ -201,7 +200,7 @@ class MenuUI:
 
             if pilihan == "1":
                 print("\n--- Tambah Mahasiswa ---")
-                nim = input("NIM     : ").strip()
+                nim = input("NIM     : ").strip().upper()
                 nama = input("Nama    : ").strip()
                 no_hp = input("No HP   : ").strip()
 
@@ -214,7 +213,7 @@ class MenuUI:
 
             elif pilihan == "2":
                 print("\n--- Ubah Data Mahasiswa ---")
-                nim = input("NIM Mahasiswa: ").strip()
+                nim = input("NIM Mahasiswa: ").strip().upper()
                 nama = input("Nama Baru (kosongkan jika tidak diubah): ").strip() or None
                 no_hp = input("No HP Baru (kosongkan jika tidak diubah): ").strip() or None
 
@@ -227,7 +226,7 @@ class MenuUI:
 
             elif pilihan == "3":
                 print("\n--- Hapus Mahasiswa ---")
-                nim = input("NIM Mahasiswa yang akan dihapus: ").strip()
+                nim = input("NIM Mahasiswa yang akan dihapus: ").strip().upper()
                 try:
                     self.sistem.hapus_mahasiswa(nim)
                     print("[Sukses] Mahasiswa berhasil dihapus!")
@@ -242,7 +241,7 @@ class MenuUI:
                     print("Belum ada data mahasiswa.")
                 else:
                     for m in daftar:
-                        print(f"- NIM: {m.nim:<12} | Nama: {m.nama:<20} | No HP: {m.no_hp}")
+                        print(f"- NIM: {m.nim:<12} | Nama: {m.nama:<25} | No HP: {m.no_hp}")
                 self._pause()
 
             elif pilihan == "0":
@@ -252,8 +251,8 @@ class MenuUI:
     def _menu_pinjam(self) -> None:
         self._bersihkan_layar()
         self._header("TRANSAKSI PEMINJAMAN ALAT")
-        nim = input("Masukkan NIM Peminjam: ").strip()
-        input_kode = input("Masukkan Kode Alat (pisahkan dengan koma, contoh: ALT01,ALT02): ").strip()
+        nim = input("Masukkan NIM Peminjam: ").strip().upper()
+        input_kode = input("Masukkan Kode Alat (pisahkan dengan koma, contoh: ALT01,ALT02): ").strip().upper()
 
         if not input_kode:
             print("[Gagal] Kode alat tidak boleh kosong.")
@@ -267,8 +266,8 @@ class MenuUI:
             daftar_kode = [d.alat.kode_alat for d in trx.daftar_alat_dipinjam]
             print("\n[Sukses] Transaksi Peminjaman Berhasil Dibuat!")
             print(f"ID Transaksi   : {trx.id_transaksi}")
-            print(f"NIM Peminjam   : {trx.peminjam.nim}")
-            print(f"Tanggal Pinjam : {trx.tanggal_pinjam.strftime('%Y-%m-%d')}")
+            print(f"NIM Peminjam   : {trx.peminjam.nim} ({trx.peminjam.nama})")
+            print(f"Tanggal Pinjam : {trx.tanggal_pinjam.strftime('%Y-%m-%d %H:%M')}")
             print(f"Batas Waktu    : {trx.batas_waktu.strftime('%Y-%m-%d')}")
             print(f"Daftar Alat    : {', '.join(daftar_kode)}")
         except (ValueError, KeyError) as e:
@@ -279,7 +278,7 @@ class MenuUI:
     def _menu_kembalikan(self) -> None:
         self._bersihkan_layar()
         self._header("TRANSAKSI PENGEMBALIAN ALAT")
-        id_trx = input("Masukkan ID Transaksi: ").strip()
+        id_trx = input("Masukkan ID Transaksi: ").strip().upper()
 
         try:
             trx = self.sistem.get_transaksi(id_trx)
@@ -291,8 +290,8 @@ class MenuUI:
                 return
 
             print(f"\nAlat yang belum dikembalikan: {', '.join(alat_tersisa)}")
-            input_alat = input("Masukkan kode alat yang akan dikembalikan (pisahkan dengan koma): ").strip()
-            
+            input_alat = input("Masukkan kode alat yang akan dikembalikan (pisahkan dengan koma): ").strip().upper()
+
             if not input_alat:
                 print("[Gagal] Tidak ada kode alat yang diinput.")
                 self._pause()
@@ -307,7 +306,7 @@ class MenuUI:
                     print(f"[Gagal] Alat {kode} tidak ada dalam daftar peminjaman aktif transaksi ini.")
                     self._pause()
                     return
-                kondisi = input(f"Kondisi alat [{kode}] saat dikembalikan: ").strip()
+                kondisi = input(f"Kondisi alat [{kode}] saat dikembalikan: ").strip().title()
                 pengembalian_dict[kode] = kondisi
 
             res_trx = self.sistem.kembalikan(id_trx, pengembalian_dict)
@@ -339,7 +338,7 @@ class MenuUI:
                 dikembalikan_count = sum(1 for d in t.daftar_alat_dipinjam if d.status_alat == "Dikembalikan")
                 info_kembali = f" ({dikembalikan_count}/{total_alat} alat kembali)"
                 print(
-                    f"[{t.id_transaksi}] NIM: {t.peminjam.nim:<10} | Status: {t.status_pinjam:<20} | "
+                    f"[{t.id_transaksi}] NIM: {t.peminjam.nim:<10} | Status: {t.status_pinjam:<22} | "
                     f"Pinjam: {t.tanggal_pinjam.strftime('%Y-%m-%d')} | Batas: {t.batas_waktu.strftime('%Y-%m-%d')}{info_kembali}"
                 )
         self._pause()
