@@ -1,4 +1,3 @@
-from tabulate import tabulate
 class Mahasiswa:
     def __init__(self, nim, nama, no_hp):
         self.nim = nim
@@ -7,4 +6,5 @@ class Mahasiswa:
 
     def tampilkan_info(self):
             kolom = ["NIM", "Nama", "Kontak"]
-            print(tabulate(self.nim, self.nama, self.no_hp, headers=kolom, tablefmt="fancy_grid"))
+            print("NIM", | "Nama", | "Kontak")
+            print(self.nim, | self.nama, | self.no_hp)
