@@ -5,5 +5,5 @@ class Mahasiswa:
         self.no_hp = no_hp
 
     def tampilkan_info(self):
-            print("NIM", | "Nama", | "Kontak")
-            print(self.nim, | self.nama, | self.no_hp)
+            print(f"=== NIM ===|=== Nama ===|=== Kontak ===")
+            print(f"{self.nim} | {self.nama} | {self.no_hp}")
