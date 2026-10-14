@@ -21,6 +21,27 @@ class SistemPeminjaman:
         self.data_transaksi: dict[str, TransaksiPeminjaman] = {}
         self._counter_transaksi: int = 0
 
+        # Panggil data dummy otomatis saat class dibuat
+        self._muat_data_awal()
+
+    def _muat_data_awal(self) -> None:
+        """Mengisi sampel data awal ke dalam sistem."""
+        # 1. Kategori Alat Awal
+        self.tambah_kategori("KAT01", "Perangkat Komputasi")
+        self.tambah_kategori("KAT02", "Perangkat Jaringan")
+        self.tambah_kategori("KAT03", "Perangkat Multimedia")
+
+        # 2. Data Alat Awal
+        self.tambah_alat("ALT01", "Laptop Dell XPS 15", "KAT01", "Baik")
+        self.tambah_alat("ALT02", "Router MikroTik RB750", "KAT02", "Baik")
+        self.tambah_alat("ALT03", "Kamera DSLR Canon", "KAT03", "Baik")
+        self.tambah_alat("ALT04", "Proyektor Epson", "KAT03", "Baik")
+
+        # 3. Data Mahasiswa Awal
+        self.tambah_mahasiswa("K3525023", "Dennis Pratama Saputra", "081234567890")
+        self.tambah_mahasiswa("K3525048", "Allicya Nailah Fairuza", "082345678901")
+        self.tambah_mahasiswa("K3525051", "Arofa Karindra Bimantara", "083456789012")
+
     #  Helper Internal 
     def _transaksi_aktif(self, nim: str | None = None) -> list[TransaksiPeminjaman]:
         return [
