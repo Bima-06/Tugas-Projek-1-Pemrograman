@@ -264,12 +264,13 @@ class MenuUI:
 
         try:
             trx = self.sistem.pinjam(nim, kode_alat)
+            daftar_kode = [d.alat.kode_alat for d in trx.daftar_alat_dipinjam]
             print("\n[Sukses] Transaksi Peminjaman Berhasil Dibuat!")
             print(f"ID Transaksi   : {trx.id_transaksi}")
-            print(f"NIM Peminjam   : {trx.nim}")
-            print(f"Tanggal Pinjam : {trx.tanggal_pinjam}")
-            print(f"Batas Waktu    : {trx.deadline}")
-            print(f"Daftar Alat    : {', '.join(trx.kode_alat)}")
+            print(f"NIM Peminjam   : {trx.peminjam.nim}")
+            print(f"Tanggal Pinjam : {trx.tanggal_pinjam.strftime('%Y-%m-%d')}")
+            print(f"Batas Waktu    : {trx.batas_waktu.strftime('%Y-%m-%d')}")
+            print(f"Daftar Alat    : {', '.join(daftar_kode)}")
         except (ValueError, KeyError) as e:
             print(f"\n[Gagal] {e}")
         self._pause()
@@ -282,7 +283,7 @@ class MenuUI:
 
         try:
             trx = self.sistem.get_transaksi(id_trx)
-            alat_tersisa = [k for k in trx.kode_alat if k not in trx.alat_kembali]
+            alat_tersisa = [d.alat.kode_alat for d in trx.daftar_alat_dipinjam if d.status_alat == "Dipinjam"]
 
             if not alat_tersisa:
                 print("[Peringatan] Semua alat pada transaksi ini sudah dikembalikan.")
@@ -311,7 +312,7 @@ class MenuUI:
 
             res_trx = self.sistem.kembalikan(id_trx, pengembalian_dict)
             print("\n[Sukses] Pengembalian berhasil diproses!")
-            print(f"Status Transaksi Sekarang: {res_trx.status}")
+            print(f"Status Transaksi Sekarang: {res_trx.status_pinjam}")
 
         except (ValueError, KeyError) as e:
             print(f"\n[Gagal] {e}")
@@ -334,9 +335,11 @@ class MenuUI:
             print("Tidak ada riwayat transaksi.")
         else:
             for t in daftar:
-                dikembalikan = f" ({len(t.alat_kembali)}/{len(t.kode_alat)} alat kembali)"
+                total_alat = len(t.daftar_alat_dipinjam)
+                dikembalikan_count = sum(1 for d in t.daftar_alat_dipinjam if d.status_alat == "Dikembalikan")
+                info_kembali = f" ({dikembalikan_count}/{total_alat} alat kembali)"
                 print(
-                    f"[{t.id_transaksi}] NIM: {t.nim:<10} | Status: {t.status:<20} | "
-                    f"Pinjam: {t.tanggal_pinjam} | Deadline: {t.deadline}{dikembalikan}"
+                    f"[{t.id_transaksi}] NIM: {t.peminjam.nim:<10} | Status: {t.status_pinjam:<20} | "
+                    f"Pinjam: {t.tanggal_pinjam.strftime('%Y-%m-%d')} | Batas: {t.batas_waktu.strftime('%Y-%m-%d')}{info_kembali}"
                 )
         self._pause()
