@@ -1,15 +1,14 @@
-from datetime import datetime
 from typing import List, Optional
-from models.alat import DataAlat
+from datetime import datetime
 from models.mahasiswa import Mahasiswa
-
+from models.alat import DataAlat
 
 class DetailPeminjaman:
     def __init__(
-        self,
-        alat: DataAlat,
-        kondisi_pengembalian_alat: Optional[str] = None,
-        tanggal_pengembalian: Optional[datetime] = None,
+        self, 
+        alat: DataAlat, 
+        kondisi_pengembalian_alat: Optional[str] = None, 
+        tanggal_pengembalian: Optional[datetime] = None, 
         status_alat: str = "Dipinjam"
     ):
         self.alat = alat
@@ -21,7 +20,12 @@ class DetailPeminjaman:
         self.kondisi_pengembalian_alat = kondisi
         self.tanggal_pengembalian = tanggal
         self.status_alat = "Dikembalikan"
+
         self.alat.perbarui_kondisi(kondisi)
+        if kondisi.lower() == "baik":
+            self.alat.ketersediaan_alat = True
+        else:
+            self.alat.ketersediaan_alat = False
 
     def __str__(self) -> str:
         tgl_kembali = self.tanggal_pengembalian.strftime("%Y-%m-%d %H:%M") if self.tanggal_pengembalian else "-"
@@ -30,11 +34,11 @@ class DetailPeminjaman:
 
 class TransaksiPeminjaman:
     def __init__(
-        self,
-        id_transaksi: str,
-        peminjam: Mahasiswa,
-        tanggal_pinjam: datetime,
-        batas_waktu: datetime,
+        self, 
+        id_transaksi: str, 
+        peminjam: Mahasiswa, 
+        tanggal_pinjam: datetime, 
+        batas_waktu: datetime, 
         status_pinjam: str = "Aktif"
     ):
         self.id_transaksi = id_transaksi
