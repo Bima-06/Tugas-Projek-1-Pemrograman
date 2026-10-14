@@ -1,3 +1,4 @@
+from tabulate import tabulate
 class Mahasiswa:
     def __init__(self, nim, nama, no_hp):
         self.nim = nim
