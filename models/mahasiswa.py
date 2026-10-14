@@ -5,6 +5,5 @@ class Mahasiswa:
         self.no_hp = no_hp
 
     def tampilkan_info(self):
-            kolom = ["NIM", "Nama", "Kontak"]
             print("NIM", | "Nama", | "Kontak")
             print(self.nim, | self.nama, | self.no_hp)
