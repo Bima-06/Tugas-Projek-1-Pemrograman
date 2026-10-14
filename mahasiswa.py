@@ -1,5 +1,5 @@
-import json
 from tabulate import tabulate
+import alat
 
 class mahasiswa:
     def __init__(self, nim, nama, no_hp):
@@ -12,8 +12,7 @@ class mahasiswa:
         while register_state:
             try:
 
-                with open("data_mahasiswa.txt", "w") as f:
-                    data = json.load(f)
+                with open("data_mahasiswa.txt", "w") as data:
                     reg_nim = input("Masukkan NIM Anda: ")
                     reg_nama = input("Masukkan Nama Anda: ")
                     reg_no_hp = input("Masukkan No HP Anda: ")
@@ -27,6 +26,8 @@ class mahasiswa:
 
             except FileNotFoundError:
                 data = {}
+
+    
 
     def login():
         login_state = True
@@ -51,3 +52,13 @@ class mahasiswa:
             with open("data_mahasiswa.txt", "r") as data:
                 kolom = ["NIM", "Nama", "Kontak"]
                 print(tabulate(data, headers=kolom, tablefmt="fancy_grid"))
+
+    def pinjam():
+        pinjam_state = True
+        pinjam_limit = 3
+        while pinjam_state:
+            try:
+                if pinjam_limit <= 3:
+                    
+                    input_kategori = input("Masukkan kategori alat: ")
+                    input_kode = input("Masukkan kode alat: ")
