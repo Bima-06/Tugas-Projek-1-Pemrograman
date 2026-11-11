@@ -1,0 +1,4 @@
+ALT01|Laptop Dell XPS 15|KAT01|Baik
+ALT02|Router MikroTik RB750|KAT02|Baik
+ALT03|Kamera DSLR Canon|KAT03|Baik
+ALT04|Proyektor Epson|KAT03|Baik
