@@ -1,1 +1,5 @@
 TRX0001|ALT01|Dipinjam|-|-
+TRX0002|ALT02|Dikembalikan|Baik|2026-11-05 10:15:00
+TRX0002|ALT05|Dipinjam|-|-
+TRX0003|ALT03|Dikembalikan|Baik|2026-11-07 14:20:00
+TRX0003|ALT08|Dikembalikan|Rusak Ringan|2026-11-07 14:20:00
