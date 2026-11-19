@@ -1,3 +1,0 @@
-KAT01|Perangkat Komputasi
-KAT02|Perangkat Jaringan
-KAT03|Perangkat Multimedia

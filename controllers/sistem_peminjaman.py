@@ -3,7 +3,7 @@ from models.alat import DataAlat
 from models.kategori import KategoriAlat
 from models.mahasiswa import Mahasiswa
 from models.transaksi import DetailPeminjaman, TransaksiPeminjaman
-from utils.file_handler import FileHandler
+from utils.db_handler import DatabaseHandler
 
 
 class SistemPeminjaman:
@@ -15,16 +15,18 @@ class SistemPeminjaman:
     STATUS_SELESAI: str = "Selesai"
 
     def __init__(self) -> None:
-        # Load data dari file .txt
-        self.data_kategori = FileHandler.muat_kategori()
-        self.data_mahasiswa = FileHandler.muat_mahasiswa()
-        self.data_alat = FileHandler.muat_alat(self.data_kategori)
-        self.data_transaksi, self._counter_transaksi = FileHandler.muat_transaksi(
-            self.data_mahasiswa, self.data_alat
-        )
-
+        self.muat_ulang_data()
         if not self.data_kategori and not self.data_alat and not self.data_mahasiswa:
             self._muat_data_awal()
+
+    def muat_ulang_data(self) -> None:
+        """Memuat data terbaru dari TiDB Cloud agar sinkron antar anggota kelompok."""
+        self.data_kategori = DatabaseHandler.muat_kategori()
+        self.data_mahasiswa = DatabaseHandler.muat_mahasiswa()
+        self.data_alat = DatabaseHandler.muat_alat(self.data_kategori)
+        self.data_transaksi, self._counter_transaksi = DatabaseHandler.muat_transaksi(
+            self.data_mahasiswa, self.data_alat
+        )
 
     def _muat_data_awal(self) -> None:
         self.tambah_kategori("KAT01", "Perangkat Komputasi")
@@ -40,13 +42,13 @@ class SistemPeminjaman:
         self.tambah_mahasiswa("K3525048", "Allicya Nailah Fairuza", "082345678901")
         self.tambah_mahasiswa("K3525051", "Arofa Karindra Bimantara", "083456789012")
 
-    # --- Auto Save di Method Modifikasi ---
+    # --- CRUD Kategori ---
     def tambah_kategori(self, id_kategori: str, nama: str) -> KategoriAlat:
         if id_kategori in self.data_kategori:
             raise ValueError(f"Kategori {id_kategori} sudah ada.")
         kat = KategoriAlat(id_kategori, nama)
+        DatabaseHandler.insert_kategori(kat)
         self.data_kategori[id_kategori] = kat
-        FileHandler.simpan_kategori(self.data_kategori)
         return kat
 
     def hapus_kategori(self, id_kategori: str) -> None:
@@ -54,31 +56,33 @@ class SistemPeminjaman:
             raise KeyError(f"Kategori {id_kategori} tidak ditemukan.")
         if any(a.kategori.id_kategori == id_kategori for a in self.data_alat.values()):
             raise ValueError("Kategori masih dipakai oleh alat.")
+        DatabaseHandler.delete_kategori(id_kategori)
         del self.data_kategori[id_kategori]
-        FileHandler.simpan_kategori(self.data_kategori)
 
+    # --- CRUD Mahasiswa ---
     def tambah_mahasiswa(self, nim: str, nama: str, no_hp: str) -> Mahasiswa:
         if nim in self.data_mahasiswa:
             raise ValueError(f"NIM {nim} sudah terdaftar.")
         mhs = Mahasiswa(nim, nama, no_hp)
+        DatabaseHandler.insert_mahasiswa(mhs)
         self.data_mahasiswa[nim] = mhs
-        FileHandler.simpan_mahasiswa(self.data_mahasiswa)
         return mhs
 
     def ubah_mahasiswa(self, nim: str, nama: str | None = None, no_hp: str | None = None) -> Mahasiswa:
         mhs = self.get_mahasiswa(nim)
         mhs.nama = nama or mhs.nama
         mhs.no_hp = no_hp or mhs.no_hp
-        FileHandler.simpan_mahasiswa(self.data_mahasiswa)
+        DatabaseHandler.update_mahasiswa(mhs)
         return mhs
 
     def hapus_mahasiswa(self, nim: str) -> None:
         self.get_mahasiswa(nim)
         if self._transaksi_aktif(nim):
             raise ValueError("Mahasiswa masih memiliki transaksi aktif.")
+        DatabaseHandler.delete_mahasiswa(nim)
         del self.data_mahasiswa[nim]
-        FileHandler.simpan_mahasiswa(self.data_mahasiswa)
 
+    # --- CRUD Alat ---
     def tambah_alat(self, kode: str, nama: str, id_kategori: str, kondisi: str = "Baik") -> DataAlat:
         if kode in self.data_alat:
             raise ValueError(f"Kode alat {kode} sudah ada.")
@@ -86,25 +90,27 @@ class SistemPeminjaman:
             raise KeyError(f"Kategori {id_kategori} tidak ditemukan.")
         self._validasi_kondisi(kondisi)
         alat = DataAlat(kode, nama, self.data_kategori[id_kategori], kondisi)
+        DatabaseHandler.insert_alat(alat)
         self.data_alat[kode] = alat
-        FileHandler.simpan_alat(self.data_alat)
         return alat
 
     def ubah_kondisi_alat(self, kode: str, kondisi: str) -> DataAlat:
         alat = self.get_alat(kode)
         self._validasi_kondisi(kondisi)
+        DatabaseHandler.update_kondisi_alat(kode, kondisi)
         alat.perbarui_kondisi(kondisi)
-        FileHandler.simpan_alat(self.data_alat)
         return alat
 
     def hapus_alat(self, kode: str) -> None:
         self.get_alat(kode)
         if kode in self._alat_sedang_dipinjam():
             raise ValueError("Alat sedang terlibat transaksi aktif.")
+        DatabaseHandler.delete_alat(kode)
         del self.data_alat[kode]
-        FileHandler.simpan_alat(self.data_alat)
 
+    # --- Transaksi Peminjaman & Pengembalian ---
     def pinjam(self, nim: str, kode_alat: list[str]) -> TransaksiPeminjaman:
+        self.muat_ulang_data()  # Pastikan stok terbaru dari database online
         mhs = self.get_mahasiswa(nim)
         if not kode_alat or len(set(kode_alat)) != len(kode_alat):
             raise ValueError("Daftar alat kosong atau duplikat.")
@@ -128,12 +134,12 @@ class SistemPeminjaman:
             detail = DetailPeminjaman(self.get_alat(kode))
             trx.tambah_alat(detail)
 
+        DatabaseHandler.insert_transaksi(trx)
         self.data_transaksi[id_trx] = trx
-        FileHandler.simpan_transaksi(self.data_transaksi)
-        FileHandler.simpan_alat(self.data_alat)
         return trx
 
     def kembalikan(self, id_transaksi: str, pengembalian: dict[str, str]) -> TransaksiPeminjaman:
+        self.muat_ulang_data()
         trx = self.get_transaksi(id_transaksi)
         if trx.status_pinjam == self.STATUS_SELESAI:
             raise ValueError("Transaksi sudah selesai.")
@@ -155,12 +161,11 @@ class SistemPeminjaman:
 
         semua_kembali = all(d.status_alat == "Dikembalikan" for d in trx.daftar_alat_dipinjam)
         trx.ubah_status(self.STATUS_SELESAI if semua_kembali else self.STATUS_SEBAGIAN)
-        
-        FileHandler.simpan_transaksi(self.data_transaksi)
-        FileHandler.simpan_alat(self.data_alat)
+
+        DatabaseHandler.update_pengembalian(trx)
         return trx
 
-    # --- Helper internal tetap tidak berubah ---
+    # --- Helper internal tetap sama persis ---
     def _transaksi_aktif(self, nim: str | None = None) -> list[TransaksiPeminjaman]:
         return [
             t for t in self.data_transaksi.values()
